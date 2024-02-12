@@ -17,7 +17,7 @@ class Scene2 extends Phaser.Scene {
 
         this.cursors = this.input.keyboard.createCursorKeys();
 
-        this.physics.add.collider(this.player, platforms);
+        this.physics.add.collider(this.player, platforms, this.hit, null, this);
         this.physics.add.collider(this.player, this.pipes, this.hit, null, this);
         //this.add.text(20, 20, "Playing game", { font: "25px Arial", fill: "yellow" });
     }
@@ -47,6 +47,7 @@ class Scene2 extends Phaser.Scene {
 
     hit() {
         this.physics.pause();
+        this.time.delayedCall(1000, this.restartScene, [], this);
     }
 
     update() {
@@ -66,8 +67,8 @@ class Scene2 extends Phaser.Scene {
         }
     }
 
-    setupPlayer() {
-        console.log("I am working");
+    restartScene() {
+        this.scene.restart();
     }
 
 }
