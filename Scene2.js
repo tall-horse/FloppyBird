@@ -1,6 +1,7 @@
 class Scene2 extends Phaser.Scene {
     constructor() {
         super("playGame");
+        var score = 0;
     }
 
     create() {
@@ -11,6 +12,7 @@ class Scene2 extends Phaser.Scene {
         this.player = this.physics.add.sprite(this.config.width / 2, this.config.height / 2, "yellowbird-midflap");
 
         var platforms = this.physics.add.staticGroup();
+        this.gapsGroup = this.physics.add.group();
         this.managePipes();
 
         platforms.create(this.config.width / 2, this.config.height, "base");
@@ -19,7 +21,8 @@ class Scene2 extends Phaser.Scene {
 
         this.physics.add.collider(this.player, platforms, this.hit, null, this);
         this.physics.add.collider(this.player, this.pipes, this.hit, null, this);
-        //this.add.text(20, 20, "Playing game", { font: "25px Arial", fill: "yellow" });
+        this.physics.add.overlap(this.player, this.gapsGroup, this.scoreAPoint, null, this)
+        this.scoreUI = this.add.text(10, 10, "0", { font: "25px Arial", fill: "red" });
     }
     managePipes() {
         this.pipes = this.physics.add.group();
@@ -48,10 +51,22 @@ class Scene2 extends Phaser.Scene {
         });
         this.pipes.children.entries[0].setFlipY(true);
 
-        //this.safeZone - (this.gap / 2)
+        this.scoreTrigger = this.add.rectangle(
+            this.config.width,
+            this.config.height / 2,
+            this.pipeWidth / 4,
+            this.config.height,
+            0x000000, 1 // Set the color to be invisible //red: 0xD04848
+        );
+        console.log(this.safeHeightBottom - this.safeHeightTop);
+        this.gapsGroup.add(this.scoreTrigger);
+        this.physics.add.existing(this.scoreTrigger);
+        this.scoreTrigger.body.setAllowGravity(false);
+        this.scoreTrigger.setVisible(false);
     }
 
     hit() {
+        this.score = 0; // Reset the score
         this.physics.pause();
         this.time.delayedCall(1000, this.restartScene, [], this);
     }
@@ -61,7 +76,14 @@ class Scene2 extends Phaser.Scene {
             this.player.setVelocityY(-250);
         }
         this.pipes.setVelocityX(-100);
+        this.scoreTrigger.body.setVelocityX(-100);
         this.ReplacePipePair();
+    }
+
+    scoreAPoint() {
+        this.score++;
+        this.scoreTrigger.body.checkCollision.none = true;
+        this.scoreUI.text = this.score.toString();
     }
     ReplacePipePair() {
         if (this.pipes.children.entries[0].x < 0 - this.pipeWidth) {
@@ -72,6 +94,11 @@ class Scene2 extends Phaser.Scene {
 
             this.pipes.children.entries[1].x = this.config.width;
             this.pipes.children.entries[1].y = this.safeHeightBottom;
+
+            this.scoreTrigger.x = this.config.width;
+            this.scoreTrigger.y = this.config.height / 2;
+
+            this.scoreTrigger.body.checkCollision.none = false;
         }
     }
 
