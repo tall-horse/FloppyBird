@@ -58,7 +58,6 @@ class Scene2 extends Phaser.Scene {
             this.config.height,
             0x000000, 1 // Set the color to be invisible //red: 0xD04848
         );
-        console.log(this.safeHeightBottom - this.safeHeightTop);
         this.gapsGroup.add(this.scoreTrigger);
         this.physics.add.existing(this.scoreTrigger);
         this.scoreTrigger.body.setAllowGravity(false);
