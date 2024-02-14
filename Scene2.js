@@ -6,6 +6,10 @@ class Scene2 extends Phaser.Scene {
         var baseHeight = 112;
         var baseWidth = 336;
         var config;
+        this.upAngle = -20;
+        this.downAngle = 90;
+        this.previousVelocityY = 0;
+        this.floatingTime = 0;
     }
 
     create() {
@@ -110,6 +114,34 @@ class Scene2 extends Phaser.Scene {
         this.groundParallax(self);
         this.scoreTrigger.body.setVelocityX(-100);
         this.ReplacePipePair();
+
+        const currentVelocityY = this.player.body.velocity.y;
+
+        this.floatingTime += this.game.loop.delta;
+        // Check if the bird is moving upwards or downwards
+        if (currentVelocityY < this.previousVelocityY) {
+            // Bird is moving upwards
+            this.tweens.add({
+                targets: this.player,
+                duration: 100, // Set the desired time in milliseconds
+                angle: this.upAngle,
+                ease: 'Linear'
+            });
+            this.floatingTime = 0;
+            //this.player.setRotation(this.upAngle);
+        } if (this.floatingTime >= 1250 && currentVelocityY > this.previousVelocityY) {
+            // Bird is moving downwards
+            this.tweens.add({
+                targets: this.player,
+                duration: 200, // Set the desired time in milliseconds
+                angle: this.downAngle,
+                ease: 'Linear'
+            });
+            this.floatingTime = 0;
+        }
+
+        // Store the current velocity for the next frame
+        this.previousVelocityY = currentVelocityY;
     }
 
     groundParallax(self) {
