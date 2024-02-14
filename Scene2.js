@@ -10,22 +10,26 @@ class Scene2 extends Phaser.Scene {
         this.downAngle = 90;
         this.previousVelocityY = 0;
         this.floatingTime = 0;
+        this.isPlaying = false;
     }
 
     create() {
         this.background = this.add.image(0, 0, "background-day");
+        this.background.setDepth(0);
         this.background.setOrigin(0, 0);
 
         this.config = this.game.config;
         this.player = this.physics.add.sprite(this.config.width / 2, this.config.height / 2, "yellowbird-midflap");
+        this.player.setDepth(1);
+        this.player.body.setAllowGravity(false);
 
         this.platforms = this.physics.add.group();
         this.gapsGroup = this.physics.add.group();
-        this.managePipes();
 
         for (let i = 0; i < 3; i++) {
             this.platforms.create((i * this.config.width) + (this.config.width / 2), this.config.height, "base");
         }
+        this.platforms.setDepth(1);
         this.platforms.children.iterate(function (child) {
             child.body.allowGravity = false;
         });
@@ -33,9 +37,9 @@ class Scene2 extends Phaser.Scene {
 
         this.cursors = this.input.keyboard.createCursorKeys();
 
-        this.createCollisonRules(this.platforms);
         this.scoreContainer = this.add.container(20, 20);
         this.updateScoreUI();
+        //this.welcomeMessage = this.add.sprite(this.config.width / 2, this.config.height / 2, "message");
     }
     createCollisonRules(platforms) {
         this.physics.add.collider(this.player, platforms, this.hit, null, this);
@@ -64,6 +68,7 @@ class Scene2 extends Phaser.Scene {
         this.safeHeightBottom = Phaser.Math.Between(this.minBottomPipeHeight, this.maxBottomPipeHeight);
         this.pipes.create(this.config.width, this.safeHeightTop, "pipe");
         this.pipes.create(this.config.width, this.safeHeightBottom, "pipe"); //468
+        this.pipes.setDepth(0);
         this.pipes.children.iterate(function (child) {
             child.body.allowGravity = false;
             child.setOrigin(0.5, 0); //bottom of unflipped sprite is origin
@@ -97,9 +102,17 @@ class Scene2 extends Phaser.Scene {
         });
         this.player.play("birdAnimation");
     }
-
+    startGame() {
+        this.isPlaying = true;
+        this.physics.resume();
+        this.player.body.setAllowGravity(true);
+        this.managePipes();
+        this.createCollisonRules(this.platforms);
+        //this.welcomeMessage.setActive(false);
+    }
     hit() {
         this.score = 0; // Reset the score
+        this.isPlaying = false;
         this.physics.pause();
         this.player.stop();
         this.time.delayedCall(1000, this.restartScene, [], this);
@@ -107,11 +120,15 @@ class Scene2 extends Phaser.Scene {
 
     update() {
         const self = this;
+        this.groundParallax(self);
         if (this.cursors.up.isDown || this.cursors.space.isDown) {
+            if (!this.isPlaying) {
+                this.startGame();
+            }
             this.player.setVelocityY(-250);
         }
+        if (!this.isPlaying) return;
         this.pipes.setVelocityX(-100);
-        this.groundParallax(self);
         this.scoreTrigger.body.setVelocityX(-100);
         this.ReplacePipePair();
 
