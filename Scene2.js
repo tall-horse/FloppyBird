@@ -2,6 +2,7 @@ class Scene2 extends Phaser.Scene {
     constructor() {
         super("playGame");
         var score = 0;
+        var scoreContainer;
     }
 
     create() {
@@ -22,7 +23,8 @@ class Scene2 extends Phaser.Scene {
         this.physics.add.collider(this.player, platforms, this.hit, null, this);
         this.physics.add.collider(this.player, this.pipes, this.hit, null, this);
         this.physics.add.overlap(this.player, this.gapsGroup, this.scoreAPoint, null, this)
-        this.scoreUI = this.add.text(10, 10, "0", { font: "25px Arial", fill: "red" });
+        this.scoreContainer = this.add.container(20, 20);
+        this.updateScoreUI();
     }
     managePipes() {
         this.pipes = this.physics.add.group();
@@ -82,8 +84,19 @@ class Scene2 extends Phaser.Scene {
     scoreAPoint() {
         this.score++;
         this.scoreTrigger.body.checkCollision.none = true;
-        this.scoreUI.text = this.score.toString();
+        //this.scoreUI.text = this.score.toString();
+        this.updateScoreUI();
     }
+    updateScoreUI() {
+        this.scoreContainer.removeAll(true);
+        const scoreString = String(this.score);
+        for (let i = 0; i < scoreString.length; i++) {
+            const numberImageKey = scoreString[i];
+            const numberImage = this.add.image(20 * (i + 1), 20, numberImageKey);
+            this.scoreContainer.add(numberImage);
+        }
+    }
+
     ReplacePipePair() {
         if (this.pipes.children.entries[0].x < 0 - this.pipeWidth) {
             this.safeHeightTop = Phaser.Math.Between(this.minTopPipeHeight, this.maxTopPipeHeight);
