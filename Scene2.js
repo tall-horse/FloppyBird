@@ -77,11 +77,27 @@ class Scene2 extends Phaser.Scene {
         this.physics.add.existing(this.scoreTrigger);
         this.scoreTrigger.body.setAllowGravity(false);
         this.scoreTrigger.setVisible(false);
+        this.launchIdleAnimation();
+    }
+
+    launchIdleAnimation() {
+        this.anims.create({
+            key: 'birdAnimation',
+            frames: [
+                { key: 'yellowbird-downflap' },
+                { key: 'yellowbird-midflap' },
+                { key: 'yellowbird-upflap' }
+            ],
+            frameRate: 10,
+            repeat: -1
+        });
+        this.player.play("birdAnimation");
     }
 
     hit() {
         this.score = 0; // Reset the score
         this.physics.pause();
+        this.player.stop();
         this.time.delayedCall(1000, this.restartScene, [], this);
     }
 
