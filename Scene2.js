@@ -11,6 +11,7 @@ class Scene2 extends Phaser.Scene {
         this.previousVelocityY = 0;
         this.floatingTime = 0;
         this.isPlaying = false;
+        this.jumpForce = -175;
     }
 
     create() {
@@ -125,7 +126,7 @@ class Scene2 extends Phaser.Scene {
             if (!this.isPlaying) {
                 this.startGame();
             }
-            this.player.setVelocityY(-250);
+            this.player.setVelocityY(this.jumpForce);
         }
         if (!this.isPlaying) return;
         this.pipes.setVelocityX(-100);
@@ -146,7 +147,7 @@ class Scene2 extends Phaser.Scene {
             });
             this.floatingTime = 0;
             //this.player.setRotation(this.upAngle);
-        } if (this.floatingTime >= 1250 && currentVelocityY > this.previousVelocityY) {
+        } if (this.floatingTime >= 1150 && currentVelocityY > this.previousVelocityY) {
             // Bird is moving downwards
             this.tweens.add({
                 targets: this.player,
@@ -181,6 +182,7 @@ class Scene2 extends Phaser.Scene {
             const numberImageKey = scoreString[i];
             const numberImage = this.add.image(20 * (i + 1), 20, numberImageKey);
             this.scoreContainer.add(numberImage);
+            this.scoreContainer.setDepth(3);
         }
     }
 
