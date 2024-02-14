@@ -3,6 +3,9 @@ class Scene2 extends Phaser.Scene {
         super("playGame");
         var score = 0;
         var scoreContainer;
+        var baseHeight = 112;
+        var baseWidth = 336;
+        var config;
     }
 
     create() {
@@ -12,20 +15,30 @@ class Scene2 extends Phaser.Scene {
         this.config = this.game.config;
         this.player = this.physics.add.sprite(this.config.width / 2, this.config.height / 2, "yellowbird-midflap");
 
-        var platforms = this.physics.add.staticGroup();
+        this.platforms = this.physics.add.group();
         this.gapsGroup = this.physics.add.group();
         this.managePipes();
 
-        platforms.create(this.config.width / 2, this.config.height, "base");
+        for (let i = 0; i < 3; i++) {
+            this.platforms.create((i * this.config.width) + (this.config.width / 2), this.config.height, "base");
+        }
+        this.platforms.children.iterate(function (child) {
+            child.body.allowGravity = false;
+        });
+        this.platforms.setVelocityX(-100);
 
         this.cursors = this.input.keyboard.createCursorKeys();
 
-        this.physics.add.collider(this.player, platforms, this.hit, null, this);
-        this.physics.add.collider(this.player, this.pipes, this.hit, null, this);
-        this.physics.add.overlap(this.player, this.gapsGroup, this.scoreAPoint, null, this)
+        this.createCollisonRules(this.platforms);
         this.scoreContainer = this.add.container(20, 20);
         this.updateScoreUI();
     }
+    createCollisonRules(platforms) {
+        this.physics.add.collider(this.player, platforms, this.hit, null, this);
+        this.physics.add.collider(this.player, this.pipes, this.hit, null, this);
+        this.physics.add.overlap(this.player, this.gapsGroup, this.scoreAPoint, null, this);
+    }
+
     managePipes() {
         this.pipes = this.physics.add.group();
         this.pipeWidth = 52; //softcode that
@@ -73,18 +86,27 @@ class Scene2 extends Phaser.Scene {
     }
 
     update() {
+        const self = this;
         if (this.cursors.up.isDown) {
             this.player.setVelocityY(-250);
         }
         this.pipes.setVelocityX(-100);
+        this.groundParallax(self);
         this.scoreTrigger.body.setVelocityX(-100);
         this.ReplacePipePair();
+    }
+
+    groundParallax(self) {
+        this.platforms.children.iterate(function (child) {
+            if (child.body.x <= -child.width) {
+                child.x = self.config.width + child.width / 2;
+            }
+        });
     }
 
     scoreAPoint() {
         this.score++;
         this.scoreTrigger.body.checkCollision.none = true;
-        //this.scoreUI.text = this.score.toString();
         this.updateScoreUI();
     }
     updateScoreUI() {
