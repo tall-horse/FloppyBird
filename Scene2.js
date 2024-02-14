@@ -87,7 +87,7 @@ class Scene2 extends Phaser.Scene {
 
     update() {
         const self = this;
-        if (this.cursors.up.isDown) {
+        if (this.cursors.up.isDown || this.cursors.space.isDown) {
             this.player.setVelocityY(-250);
         }
         this.pipes.setVelocityX(-100);
