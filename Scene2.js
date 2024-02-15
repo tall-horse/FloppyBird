@@ -40,6 +40,15 @@ class Scene2 extends Phaser.Scene {
 
         this.scoreContainer = this.add.container(20, 20);
         this.updateScoreUI();
+        this.restartButton = this.add.text(this.config.width / 2, this.config.height / 3, 'Restart', { fontFamily: 'Arial', fontSize: 24, color: '#000000', backgroundColor: '#F3B95F' })
+            .setInteractive()
+            .on('pointerdown', () => {
+                this.restartScene();
+            });
+        //this.restartButton.setInteractive(false);
+        this.restartButton.setVisible(false);
+        this.restartButton.disableInteractive();
+        this.restartButton.setDepth(4);
         //this.welcomeMessage = this.add.sprite(this.config.width / 2, this.config.height / 2, "message");
     }
     createCollisonRules(platforms) {
@@ -116,7 +125,12 @@ class Scene2 extends Phaser.Scene {
         this.isPlaying = false;
         this.physics.pause();
         this.player.stop();
-        this.time.delayedCall(1000, this.restartScene, [], this);
+        this.restartButton.setVisible(false);
+        this.restartButton.disableInteractive();
+        this.time.delayedCall(1000, () => {
+            this.restartButton.setVisible(true);
+            this.restartButton.setInteractive();
+        }, [], this);
     }
 
     update() {
