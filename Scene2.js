@@ -12,6 +12,7 @@ class Scene2 extends Phaser.Scene {
         this.floatingTime = 0;
         this.isPlaying = false;
         this.jumpForce = -175;
+        this.timeBeforePipesCome = 5;
     }
 
     create() {
@@ -49,6 +50,7 @@ class Scene2 extends Phaser.Scene {
         this.restartButton.setVisible(false);
         this.restartButton.disableInteractive();
         this.restartButton.setDepth(4);
+        this.launchIdleAnimation();
         //this.welcomeMessage = this.add.sprite(this.config.width / 2, this.config.height / 2, "message");
     }
     createCollisonRules(platforms) {
@@ -76,8 +78,8 @@ class Scene2 extends Phaser.Scene {
         this.safeZone = this.config.height / 2 - this.baseHeight;
         this.safeHeightTop = Phaser.Math.Between(this.minTopPipeHeight, this.maxTopPipeHeight);
         this.safeHeightBottom = Phaser.Math.Between(this.minBottomPipeHeight, this.maxBottomPipeHeight);
-        this.pipes.create(this.config.width, this.safeHeightTop, "pipe");
-        this.pipes.create(this.config.width, this.safeHeightBottom, "pipe"); //468
+        this.pipes.create(this.config.width * 2, this.safeHeightTop, "pipe");
+        this.pipes.create(this.config.width * 2, this.safeHeightBottom, "pipe"); //468
         this.pipes.setDepth(0);
         this.pipes.children.iterate(function (child) {
             child.body.allowGravity = false;
@@ -96,7 +98,6 @@ class Scene2 extends Phaser.Scene {
         this.physics.add.existing(this.scoreTrigger);
         this.scoreTrigger.body.setAllowGravity(false);
         this.scoreTrigger.setVisible(false);
-        this.launchIdleAnimation();
     }
 
     launchIdleAnimation() {
@@ -161,7 +162,7 @@ class Scene2 extends Phaser.Scene {
             });
             this.floatingTime = 0;
             //this.player.setRotation(this.upAngle);
-        } if (this.floatingTime >= 1150 && currentVelocityY > this.previousVelocityY) {
+        } if (this.floatingTime >= 1000 && currentVelocityY > this.previousVelocityY) {
             // Bird is moving downwards
             this.tweens.add({
                 targets: this.player,
