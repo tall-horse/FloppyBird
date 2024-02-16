@@ -1,4 +1,6 @@
-class Scene2 extends Phaser.Scene {
+import WindEvent from './WindEvent.js';
+
+export class Scene2 extends Phaser.Scene {
     constructor() {
         super("playGame");
         this.score = 0;
@@ -19,8 +21,12 @@ class Scene2 extends Phaser.Scene {
         this.baseHeight = 112;
         this.gameOver = false;
         this.outOfRangePipePair = null;
+        this.windIsOn = false;
+        this.normalSpeed = -100;
+        this.modifiedSpeed;
+        this.currentSpeed;
 
-        this.windTimeEvent = new Event('windTime');
+        this.windEvent = WindEvent;
     }
 
     create() {
@@ -55,7 +61,7 @@ class Scene2 extends Phaser.Scene {
         this.restartButton.setDepth(4);
         this.launchIdleAnimation();
         //this.welcomeMessage = this.add.sprite(this.config.width / 2, this.config.height / 2, "message");
-        document.addEventListener('windTime', this.handleWindTime);
+        this.windEvent.addListener(this.handleWindTime);
     }
     setPlatforms() {
         for (let i = 0; i < 3; i++) {
@@ -89,6 +95,7 @@ class Scene2 extends Phaser.Scene {
         for (var i = 0; i < nrOfPipePairs; i++) {
             this.createPipePair(this.config.width * (2 + i));
         }
+        this.currentSpeed = this.normalSpeed;
         this.pipes.setDepth(0);
     }
     createPipePair(xPos) {
@@ -213,8 +220,8 @@ class Scene2 extends Phaser.Scene {
             this.player.setVelocityY(this.jumpForce);
         }
         if (!this.isPlaying) return;
-        this.pipes.setVelocityX(-100);
-        this.gapsGroup.setVelocityX(-100);
+        this.pipes.setVelocityX(this.currentSpeed);
+        this.gapsGroup.setVelocityX(this.currentSpeed);
         this.replacePipePair();
 
         this.processPlayerRotation();
@@ -261,8 +268,8 @@ class Scene2 extends Phaser.Scene {
     scoreAPoint() {
         var pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
         this.score++;
-        if (this.score % 5 === 0) {
-            document.dispatchEvent(this.windTimeEvent);
+        if (this.score % 5 === 0 && !this.windIsOn) {
+            this.windEvent.fire();
         }
         pipePair.body.checkCollision.none = true;
         this.updateScoreUI();
@@ -273,8 +280,10 @@ class Scene2 extends Phaser.Scene {
             this.closestPipePair = 0;
         }
     }
-    handleWindTime() {
+    handleWindTime = () => {
         console.log("here speed of bird should be changed because of wind");
+        this.windIsOn = true;
+        this.currentSpeed = this.normalSpeed + 25;
     }
     updateScoreUI() {
         this.scoreContainer.removeAll(true);

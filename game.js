@@ -1,3 +1,6 @@
+import { Scene2 } from './Scene2.js';
+
+
 window.onload = function () {
     var config = {
         width: 288,
