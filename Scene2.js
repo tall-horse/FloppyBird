@@ -19,7 +19,6 @@ class Scene2 extends Phaser.Scene {
         this.baseHeight = 112;
         this.gameOver = false;
         this.outOfRangePipePair = null;
-        //be consistent
     }
 
     create() {
@@ -90,7 +89,7 @@ class Scene2 extends Phaser.Scene {
         this.pipes.setDepth(0);
     }
     createPipePair(xPos) {
-        this.gap = this.minGap;
+        this.gap = this.normalGap;
         this.minTopPipeHeight = -135;
         this.maxBottomPipeHeight = this.config.height - this.baseHeight; // 468
         this.minBottomPipeHeight = this.maxBottomPipeHeight - this.pipeHeight + this.baseHeight + this.gap + 20;
@@ -124,6 +123,47 @@ class Scene2 extends Phaser.Scene {
         scoreTrigger.body.setAllowGravity(false);
         scoreTrigger.setVisible(false);
     }
+    replacePipePair() {
+        var pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
+        var outOfScreenPos = 0 - this.pipeWidth;
+        if (pipePair && pipePair.x < outOfScreenPos - this.gapsGroup.children.entries.length) { // out of screen space
+            this.outOfRangePipePair = pipePair;
+            // disable
+            pipePair.setActive(false);
+            this.pipes.children.entries[this.closestPipePair].setActive(false);
+            this.pipes.children.entries[this.closestPipePair + 1].setActive(false);
+
+            // Call separate function to update positions and enable next pipe pair
+            this.updateNextPipePair(pipePair);
+        }
+    }
+
+    updateNextPipePair(closestGap) {
+        var spawnNewPipesPositionTrigger = (this.config.width / 2) - this.pipeWidth;
+
+        if (closestGap && closestGap.x < spawnNewPipesPositionTrigger) { // time to enable next pipe pair
+            // enable next pair
+            this.safeHeightTop = Phaser.Math.Between(this.minTopPipeHeight, this.maxTopPipeHeight);
+            this.safeHeightBottom = Phaser.Math.Between(this.minBottomPipeHeight, this.maxBottomPipeHeight);
+
+            const xSpawnPos = (this.config.width * 1.15) + this.pipeWidth;
+            this.pipes.children.entries[this.closestPipePair].x = xSpawnPos;
+            this.pipes.children.entries[this.closestPipePair].y = this.safeHeightTop;
+
+            this.pipes.children.entries[this.closestPipePair + 1].x = xSpawnPos;
+            this.pipes.children.entries[this.closestPipePair + 1].y = this.safeHeightBottom;
+
+            closestGap.x = xSpawnPos;
+            closestGap.y = this.config.height / 2;
+
+            closestGap.body.checkCollision.none = false;
+
+            this.outOfRangePipePair.setActive(true);//error here
+            this.pipes.children.entries[this.closestPipePair].setActive(true);
+            this.pipes.children.entries[this.closestPipePair + 1].setActive(true);
+        }
+    }
+
     launchIdleAnimation() {
         this.anims.create({
             key: 'birdAnimation',
@@ -238,47 +278,6 @@ class Scene2 extends Phaser.Scene {
         }
     }
 
-    replacePipePair() {
-        var pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
-        var outOfScreenPos = 0 - this.pipeWidth;
-        if (pipePair && pipePair.x < outOfScreenPos - this.gapsGroup.children.entries.length) { // out of screen space
-            this.outOfRangePipePair = pipePair;
-            // disable
-            pipePair.setActive(false);
-            this.pipes.children.entries[this.closestPipePair].setActive(false);
-            this.pipes.children.entries[this.closestPipePair + 1].setActive(false);
-
-            // Call separate function to update positions and enable next pipe pair
-            this.updateNextPipePair(pipePair);
-        }
-    }
-
-    updateNextPipePair(arg) {
-        //var pipePair = this.gapsGroup.children.entries[this.closestPipePair];
-        var spawnNewPipesPositionTrigger = (this.config.width / 2) - this.pipeWidth;
-        console.log(arg.x < spawnNewPipesPositionTrigger); //stoopped here
-        if (arg && arg.x < spawnNewPipesPositionTrigger) { // time to enable next pipe pair
-            // enable next pair
-            this.safeHeightTop = Phaser.Math.Between(this.minTopPipeHeight, this.maxTopPipeHeight);
-            this.safeHeightBottom = Phaser.Math.Between(this.minBottomPipeHeight, this.maxBottomPipeHeight);
-
-            const xSpawnPos = (this.config.width * 1.15) + this.pipeWidth;
-            this.pipes.children.entries[this.closestPipePair].x = xSpawnPos;
-            this.pipes.children.entries[this.closestPipePair].y = this.safeHeightTop;
-
-            this.pipes.children.entries[this.closestPipePair + 1].x = xSpawnPos;
-            this.pipes.children.entries[this.closestPipePair + 1].y = this.safeHeightBottom;
-
-            arg.x = xSpawnPos;
-            arg.y = this.config.height / 2;
-
-            arg.body.checkCollision.none = false;
-
-            this.outOfRangePipePair.setActive(true);//error here
-            this.pipes.children.entries[this.closestPipePair].setActive(true);
-            this.pipes.children.entries[this.closestPipePair + 1].setActive(true);
-        }
-    }
 
     findRightMostGap() {
         var result;
