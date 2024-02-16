@@ -25,8 +25,8 @@ export class Scene2 extends Phaser.Scene {
         this.normalSpeed = -100;
         this.modifiedSpeed;
         this.currentSpeed;
-        this.windSpeed = 25;
-        this.windTriggerIndex = 1;
+        this.windSpeed = 40;
+        this.windChangeFrequency = 5;
 
         this.windEvent = WindEvent;
     }
@@ -46,7 +46,6 @@ export class Scene2 extends Phaser.Scene {
         this.normalGap = this.player.height * 6; //24 * 6 = 144
 
         this.setPlatforms();
-        this.platforms.setVelocityX(-100);
 
         this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -145,12 +144,10 @@ export class Scene2 extends Phaser.Scene {
         var outOfScreenPos = 0 - this.pipeWidth;
         if (pipePair && pipePair.x < outOfScreenPos - this.gapsGroup.children.entries.length) { // out of screen space
             this.outOfRangePipePair = pipePair;
-            // disable
             pipePair.setActive(false);
             this.pipes.children.entries[this.closestPipePair].setActive(false);
             this.pipes.children.entries[this.closestPipePair + 1].setActive(false);
 
-            // Call separate function to update positions and enable next pipe pair
             this.updateNextPipePair(pipePair);
         }
     }
@@ -210,6 +207,7 @@ export class Scene2 extends Phaser.Scene {
         this.player.stop();
         this.restartButton.setVisible(false);
         this.restartButton.disableInteractive();
+        this.windIcon.setVisible(false);
         this.gameOver = true;
         this.time.delayedCall(1000, () => {
             this.restartButton.setVisible(true);
@@ -229,6 +227,7 @@ export class Scene2 extends Phaser.Scene {
         if (!this.isPlaying) return;
         this.pipes.setVelocityX(this.currentSpeed);
         this.gapsGroup.setVelocityX(this.currentSpeed);
+        this.platforms.setVelocityX(this.currentSpeed);
         this.replacePipePair();
 
         this.processPlayerRotation();
@@ -275,7 +274,7 @@ export class Scene2 extends Phaser.Scene {
     scoreAPoint() {
         var pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
         this.score++;
-        if (this.score % this.windTriggerIndex === 0 && !this.windIsOn) {
+        if (this.score % this.windChangeFrequency === 0) {
             this.windEvent.fire();
         }
         pipePair.body.checkCollision.none = true;
@@ -289,8 +288,13 @@ export class Scene2 extends Phaser.Scene {
     }
     handleWindTime = () => {
         this.windIsOn = true;
-        this.currentSpeed = this.normalSpeed + this.windSpeed;
-        this.updateWindUI();
+        let windDir = this.generateWindDirection();
+        this.currentSpeed = this.normalSpeed + (this.windSpeed * windDir);
+        this.updateWindUI(windDir);
+    }
+    generateWindDirection() {
+        let windDirection = Math.floor(Math.random() * 2) + 1;
+        return windDirection === 1 ? -1 : 1;
     }
     updateScoreUI() {
         this.scoreContainer.removeAll(true);
@@ -303,17 +307,17 @@ export class Scene2 extends Phaser.Scene {
         }
     }
 
-    updateWindUI() {
+    updateWindUI(speedPar) {
         if (!this.windIsOn) {
             this.windIcon.setVisible(false);
         }
         else {
             this.windIcon.setVisible(true);
-            if (this.windSpeed < 0) {
-                this.windIcon.setFlipX(false);
+            if (speedPar === 1) {
+                this.windIcon.setFlipX(true);
             }
             else {
-                this.windIcon.setFlipX(true);
+                this.windIcon.setFlipX(false);
             }
         }
     }
@@ -331,6 +335,8 @@ export class Scene2 extends Phaser.Scene {
     restartScene() {
         this.gameOver = false;
         this.scene.restart();
+        this.windIsOn = false;
+        this.windIcon.setVisible(false);
     }
 
 }
