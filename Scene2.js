@@ -19,6 +19,8 @@ class Scene2 extends Phaser.Scene {
         this.baseHeight = 112;
         this.gameOver = false;
         this.outOfRangePipePair = null;
+
+        this.windTimeEvent = new Event('windTime');
     }
 
     create() {
@@ -53,6 +55,7 @@ class Scene2 extends Phaser.Scene {
         this.restartButton.setDepth(4);
         this.launchIdleAnimation();
         //this.welcomeMessage = this.add.sprite(this.config.width / 2, this.config.height / 2, "message");
+        document.addEventListener('windTime', this.handleWindTime);
     }
     setPlatforms() {
         for (let i = 0; i < 3; i++) {
@@ -258,6 +261,9 @@ class Scene2 extends Phaser.Scene {
     scoreAPoint() {
         var pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
         this.score++;
+        if (this.score % 5 === 0) {
+            document.dispatchEvent(this.windTimeEvent);
+        }
         pipePair.body.checkCollision.none = true;
         this.updateScoreUI();
         if (this.pipes.children.entries.length > this.closestPipePair + 2) {
@@ -266,6 +272,9 @@ class Scene2 extends Phaser.Scene {
         else {
             this.closestPipePair = 0;
         }
+    }
+    handleWindTime() {
+        console.log("here speed of bird should be changed because of wind");
     }
     updateScoreUI() {
         this.scoreContainer.removeAll(true);
