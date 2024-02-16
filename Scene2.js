@@ -25,6 +25,8 @@ export class Scene2 extends Phaser.Scene {
         this.normalSpeed = -100;
         this.modifiedSpeed;
         this.currentSpeed;
+        this.windSpeed = 25;
+        this.windTriggerIndex = 1;
 
         this.windEvent = WindEvent;
     }
@@ -49,7 +51,12 @@ export class Scene2 extends Phaser.Scene {
         this.cursors = this.input.keyboard.createCursorKeys();
 
         this.scoreContainer = this.add.container(20, 20);
+        this.windIcon = this.add.image(this.config.width / 2, this.config.width / 4, "wind");
+        this.windIcon.setScale(100 / this.windIcon.width, 100 / this.windIcon.height);
+        this.windIcon.setDepth(3);
+        this.windIcon.setVisible(false);
         this.updateScoreUI();
+        this.updateWindUI();
         this.restartButton = this.add.text(this.config.width / 2, this.config.height / 3, 'Restart', { fontFamily: 'Arial', fontSize: 24, color: '#000000', backgroundColor: '#F3B95F' })
             .setInteractive()
             .on('pointerdown', () => {
@@ -268,7 +275,7 @@ export class Scene2 extends Phaser.Scene {
     scoreAPoint() {
         var pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
         this.score++;
-        if (this.score % 5 === 0 && !this.windIsOn) {
+        if (this.score % this.windTriggerIndex === 0 && !this.windIsOn) {
             this.windEvent.fire();
         }
         pipePair.body.checkCollision.none = true;
@@ -281,9 +288,9 @@ export class Scene2 extends Phaser.Scene {
         }
     }
     handleWindTime = () => {
-        console.log("here speed of bird should be changed because of wind");
         this.windIsOn = true;
-        this.currentSpeed = this.normalSpeed + 25;
+        this.currentSpeed = this.normalSpeed + this.windSpeed;
+        this.updateWindUI();
     }
     updateScoreUI() {
         this.scoreContainer.removeAll(true);
@@ -296,6 +303,20 @@ export class Scene2 extends Phaser.Scene {
         }
     }
 
+    updateWindUI() {
+        if (!this.windIsOn) {
+            this.windIcon.setVisible(false);
+        }
+        else {
+            this.windIcon.setVisible(true);
+            if (this.windSpeed < 0) {
+                this.windIcon.setFlipX(false);
+            }
+            else {
+                this.windIcon.setFlipX(true);
+            }
+        }
+    }
 
     findRightMostGap() {
         var result;
