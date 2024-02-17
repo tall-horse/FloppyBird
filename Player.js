@@ -37,37 +37,13 @@ export default class Player {
             repeat: -1
         });
 
-        this.scene.anims.play("birdAnimation", birdSprite); // Fix this line
+        this.scene.anims.play("birdAnimation", birdSprite);
     }
-    // processPlayerRotation() {
-    //     const currentVelocityY = this.sprite.body.velocity.y;
 
-    //     this.floatingTime += this.scene.game.loop.delta;
-    //     //console.log(this.tweens.);
-    //     if (currentVelocityY < this.previousVelocityY) {
-    //         TweenManager.add({
-    //             targets: this.sprite,
-    //             duration: 100,
-    //             angle: this.upAngle,
-    //             ease: 'Linear'
-    //         });
-    //         this.floatingTime = 0;
-    //     } else if (this.floatingTime >= 1000 && currentVelocityY > this.previousVelocityY) {
-    //         TweenManager.add({
-    //             targets: this.sprite,
-    //             duration: 200,
-    //             angle: this.downAngle,
-    //             ease: 'Linear'
-    //         });
-    //         this.floatingTime = 0;
-    //     }
-
-    //     this.previousVelocityY = currentVelocityY;
-    // }
     create() {
-        this.sprite = this.scene.physics.add.sprite(this.xPos, this.yPos, "yellowbird-midflap"); // Fix this line
-        this.sprite.setDepth(1); // Fix this line
-        this.sprite.body.setAllowGravity(false); // Fix this line
+        this.sprite = this.scene.physics.add.sprite(this.xPos, this.yPos, "yellowbird-midflap");
+        this.sprite.setDepth(1);
+        this.sprite.body.setAllowGravity(false);
 
         this.launchIdleAnimation();
     }
@@ -76,8 +52,7 @@ export default class Player {
             if (!this.isPlaying && !this.gameOver) {
                 this.startGame();
             }
-            this.sprite.setVelocityY(this.jumpForce); // Fix this line
+            this.sprite.setVelocityY(this.jumpForce);
         }
-        //this.processPlayerRotation();
     }
 }

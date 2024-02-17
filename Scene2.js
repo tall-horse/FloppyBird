@@ -50,8 +50,7 @@ export class Scene2 extends Phaser.Scene {
             this.hit, this.scoreAPoint, this.startGame.bind(this), this, this.cursors, this.isPlaying, this.gameOver);
         this.player.create();
 
-        this.minGap = this.player.sprite.height * 4; //24 * 4 = 96;//440
-        this.normalGap = this.player.sprite.height * 6; //24 * 6 = 144
+        this.gap = this.player.sprite.height * 6; //24 * 6 = 144
 
         this.setPlatforms();
 
@@ -99,7 +98,6 @@ export class Scene2 extends Phaser.Scene {
         this.pipesGroup.setDepth(0);
     }
     createPipePair(xPos) {
-        this.gap = this.normalGap;
         this.minTopPipeHeight = -135;
         this.maxBottomPipeHeight = this.config.height - this.baseHeight; // 468
         this.minBottomPipeHeight = this.maxBottomPipeHeight - this.pipeHeight + this.baseHeight + this.gap + 20;
@@ -125,7 +123,7 @@ export class Scene2 extends Phaser.Scene {
             this.config.height / 2,
             this.pipeWidth / 4,
             this.config.height,
-            0xD04848, 1 // Set the color to be invisible //red: 0xD04848
+            0xD04848, 1
         );
 
         this.gapsGroup.add(scoreTrigger);
@@ -136,7 +134,7 @@ export class Scene2 extends Phaser.Scene {
     replacePipePair() {
         var pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
         var outOfScreenPos = 0 - this.pipeWidth;
-        if (pipePair && pipePair.x < outOfScreenPos - this.gapsGroup.children.entries.length) { // out of screen space
+        if (pipePair && pipePair.x < outOfScreenPos - this.gapsGroup.children.entries.length) {
             this.outOfRangePipePair = pipePair;
             pipePair.setActive(false);
             this.pipesGroup.children.entries[this.closestPipePair].setActive(false);
@@ -166,7 +164,7 @@ export class Scene2 extends Phaser.Scene {
 
             closestGap.body.checkCollision.none = false;
 
-            this.outOfRangePipePair.setActive(true);//error here
+            this.outOfRangePipePair.setActive(true);
             this.pipesGroup.children.entries[this.closestPipePair].setActive(true);
             this.pipesGroup.children.entries[this.closestPipePair + 1].setActive(true);
         }
@@ -176,7 +174,6 @@ export class Scene2 extends Phaser.Scene {
         if (this.isPlaying || this.gameOver) return;
         this.isPlaying = true;
         this.physics.resume();
-        console.log("start game called");
         this.player.sprite.body.setAllowGravity(true);
         this.managePipes(3);
         this.createCollisonRules();
@@ -232,7 +229,6 @@ export class Scene2 extends Phaser.Scene {
         this.floatingTime += this.game.loop.delta;
         // Check if the bird is moving upwards or downwards
         if (currentVelocityY < this.previousVelocityY) {
-            console.log("currentVelocityY < this.previousVelocityY");
             // Bird is moving upwards
             this.tweens.add({
                 targets: this.player.sprite,
@@ -252,7 +248,6 @@ export class Scene2 extends Phaser.Scene {
             this.floatingTime = 0;
         }
 
-        // Store the current velocity for the next frame
         this.previousVelocityY = currentVelocityY;
     }
 
