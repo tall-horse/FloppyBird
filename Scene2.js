@@ -7,7 +7,7 @@ export class Scene2 extends Phaser.Scene {
         this.score = 0;
         this.scoreContainer;
         this.baseHeight = 112;
-        this.sbaseWidth = 336;
+        this.baseWidth = 336;
         this.config;
         this.upAngle = -20;
         this.downAngle = 90;
@@ -40,13 +40,14 @@ export class Scene2 extends Phaser.Scene {
 
         this.config = this.game.config;
 
-        this.platforms = this.physics.add.group();
+        this.platformsGroup = this.physics.add.group();
         this.pipesGroup = this.physics.add.group();
+        this.ceilingGroup = this.physics.add.group();
         this.gapsGroup = this.physics.add.group();
 
         this.cursors = this.input.keyboard.createCursorKeys();
 
-        this.player = new Player(this.config.width / 2, this.config.height / 2, this.platforms, this.pipesGroup, this.gapsGroup,
+        this.player = new Player(this.config.width / 2, this.config.height / 2, this.platformsGroup, this.pipesGroup, this.gapsGroup,
             this.hit, this.scoreAPoint, this.startGame.bind(this), this, this.cursors, this.isPlaying, this.gameOver);
         this.player.create();
 
@@ -76,12 +77,20 @@ export class Scene2 extends Phaser.Scene {
     }
     setPlatforms() {
         for (let i = 0; i < 3; i++) {
-            this.platforms.create((i * this.config.width) + (this.config.width / 2), this.config.height, "base");
+            this.platformsGroup.create((i * this.config.width) + (this.config.width / 2), this.config.height, "base");
         }
-        this.platforms.setDepth(1);
-        this.platforms.children.iterate(function (child) {
+        this.platformsGroup.setDepth(1);
+        this.platformsGroup.children.iterate(function (child) {
             child.body.allowGravity = false;
         });
+    }
+
+    setCeiling() {
+        let ceiling = this.ceilingGroup.create(this.config.width / 2, 0 - this.baseWidth, 'ceiling');
+        ceiling.setOrigin(0, 0);
+        ceiling.setScale(this.game.config.width, 1);
+        ceiling.setAlpha(0);
+        ceiling.body.setImmovable(true);
     }
 
     setBackground() {
@@ -180,7 +189,7 @@ export class Scene2 extends Phaser.Scene {
         //this.welcomeMessage.setActive(false);
     }
     hit() {
-        this.score = 0; // Reset the score
+        this.score = 0;
         this.closestPipePair = 0;
         this.isPlaying = false;
         this.physics.pause();
@@ -195,9 +204,10 @@ export class Scene2 extends Phaser.Scene {
         }, [], this);
     }
     createCollisonRules() {
-        this.physics.add.collider(this.player.sprite, this.platforms, this.hit, null, this); // Fix this line
-        this.physics.add.collider(this.player.sprite, this.pipesGroup, this.hit, null, this); // Fix this line
-        this.physics.add.overlap(this.player.sprite, this.gapsGroup, this.scoreAPoint, null, this); // Fix this line
+        this.physics.add.collider(this.player.sprite, this.platformsGroup, this.hit, null, this);
+        this.physics.add.collider(this.player, this.ceilingGroup, null, null, this);
+        this.physics.add.collider(this.player.sprite, this.pipesGroup, this.hit, null, this);
+        this.physics.add.overlap(this.player.sprite, this.gapsGroup, this.scoreAPoint, null, this);
     }
 
     update() {
@@ -208,14 +218,14 @@ export class Scene2 extends Phaser.Scene {
         if (!this.isPlaying) return;
         this.pipesGroup.setVelocityX(this.currentSpeed);
         this.gapsGroup.setVelocityX(this.currentSpeed);
-        this.platforms.setVelocityX(this.currentSpeed);
+        this.platformsGroup.setVelocityX(this.currentSpeed);
         this.replacePipePair();
     }
 
 
 
     groundParallax(self) {
-        this.platforms.children.iterate(function (child) {
+        this.platformsGroup.children.iterate(function (child) {
             if (child.body.x <= -child.width) {
                 child.x = self.config.width + child.width / 2;
             }
