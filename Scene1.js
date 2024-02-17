@@ -5,9 +5,6 @@ class Scene1 extends Phaser.Scene {
 
     preload() {
         this.load.image("background-day", "assets/sprites/background-day.png");
-        this.load.image("yellowbird-downflap", "assets/sprites/yellowbird-downflap.png");
-        this.load.image("yellowbird-midflap", "assets/sprites/yellowbird-midflap.png");
-        this.load.image("yellowbird-upflap", "assets/sprites/yellowbird-upflap.png");
         this.load.image("base", "assets/sprites/base.png");
         this.load.image("pipe", "assets/sprites/pipe-green.png");
         this.load.image("0", "assets/sprites/0.png");

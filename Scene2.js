@@ -1,4 +1,5 @@
 import WindEvent from './WindEvent.js';
+import Player from './Player.js';
 
 export class Scene2 extends Phaser.Scene {
     constructor() {
@@ -13,7 +14,7 @@ export class Scene2 extends Phaser.Scene {
         this.previousVelocityY = 0;
         this.floatingTime = 0;
         this.isPlaying = false;
-        this.jumpForce = -175;
+        this.jumpForce = -175;//
         this.timeBeforePipesCome = 5;
         this.closestPipePair = 0;
         this.pipeWidth = 52;
@@ -30,24 +31,30 @@ export class Scene2 extends Phaser.Scene {
 
         this.windEvent = WindEvent;
     }
+    preload() {
+        Player.preload(this);
+    }
 
     create() {
         this.setBackground();
 
         this.config = this.game.config;
 
-        this.setPlayer();
-
         this.platforms = this.physics.add.group();
-        this.pipes = this.physics.add.group();
+        this.pipesGroup = this.physics.add.group();
         this.gapsGroup = this.physics.add.group();
 
-        this.minGap = this.player.height * 4; //24 * 4 = 96;//440
-        this.normalGap = this.player.height * 6; //24 * 6 = 144
+        this.cursors = this.input.keyboard.createCursorKeys();
+
+        this.player = new Player(this.config.width / 2, this.config.height / 2, this.platforms, this.pipesGroup, this.gapsGroup,
+            this.hit, this.scoreAPoint, this.startGame.bind(this), this, this.cursors, this.isPlaying, this.gameOver);
+        this.player.create();
+
+        this.minGap = this.player.sprite.height * 4; //24 * 4 = 96;//440
+        this.normalGap = this.player.sprite.height * 6; //24 * 6 = 144
 
         this.setPlatforms();
 
-        this.cursors = this.input.keyboard.createCursorKeys();
 
         this.scoreContainer = this.add.container(20, 20);
         this.windIcon = this.add.image(this.config.width / 2, this.config.width / 4, "wind");
@@ -65,7 +72,6 @@ export class Scene2 extends Phaser.Scene {
         this.restartButton.setVisible(false);
         this.restartButton.disableInteractive();
         this.restartButton.setDepth(4);
-        this.launchIdleAnimation();
         //this.welcomeMessage = this.add.sprite(this.config.width / 2, this.config.height / 2, "message");
         this.windEvent.addListener(this.handleWindTime);
     }
@@ -79,22 +85,10 @@ export class Scene2 extends Phaser.Scene {
         });
     }
 
-    setPlayer() {
-        this.player = this.physics.add.sprite(this.config.width / 2, this.config.height / 2, "yellowbird-midflap");
-        this.player.setDepth(1);
-        this.player.body.setAllowGravity(false);
-    }
-
     setBackground() {
         this.background = this.add.image(0, 0, "background-day");
         this.background.setDepth(0);
         this.background.setOrigin(0, 0);
-    }
-
-    createCollisonRules(platforms) {
-        this.physics.add.collider(this.player, platforms, this.hit, null, this);
-        this.physics.add.collider(this.player, this.pipes, this.hit, null, this);
-        this.physics.add.overlap(this.player, this.gapsGroup, this.scoreAPoint, null, this);
     }
 
     managePipes(nrOfPipePairs) {
@@ -102,7 +96,7 @@ export class Scene2 extends Phaser.Scene {
             this.createPipePair(this.config.width * (2 + i));
         }
         this.currentSpeed = this.normalSpeed;
-        this.pipes.setDepth(0);
+        this.pipesGroup.setDepth(0);
     }
     createPipePair(xPos) {
         this.gap = this.normalGap;
@@ -118,8 +112,8 @@ export class Scene2 extends Phaser.Scene {
         this.safeHeightTop = Phaser.Math.Between(this.minTopPipeHeight, this.maxTopPipeHeight);
         this.safeHeightBottom = Phaser.Math.Between(this.minBottomPipeHeight, this.maxBottomPipeHeight);
 
-        var topPipe = this.pipes.create(xPos, this.safeHeightTop, "pipe");
-        var bottomPipe = this.pipes.create(xPos, this.safeHeightBottom, "pipe"); //468
+        var topPipe = this.pipesGroup.create(xPos, this.safeHeightTop, "pipe");
+        var bottomPipe = this.pipesGroup.create(xPos, this.safeHeightBottom, "pipe"); //468
 
         topPipe.body.setAllowGravity(false);
         bottomPipe.body.setAllowGravity(false);
@@ -145,8 +139,8 @@ export class Scene2 extends Phaser.Scene {
         if (pipePair && pipePair.x < outOfScreenPos - this.gapsGroup.children.entries.length) { // out of screen space
             this.outOfRangePipePair = pipePair;
             pipePair.setActive(false);
-            this.pipes.children.entries[this.closestPipePair].setActive(false);
-            this.pipes.children.entries[this.closestPipePair + 1].setActive(false);
+            this.pipesGroup.children.entries[this.closestPipePair].setActive(false);
+            this.pipesGroup.children.entries[this.closestPipePair + 1].setActive(false);
 
             this.updateNextPipePair(pipePair);
         }
@@ -161,11 +155,11 @@ export class Scene2 extends Phaser.Scene {
             this.safeHeightBottom = Phaser.Math.Between(this.minBottomPipeHeight, this.maxBottomPipeHeight);
 
             const xSpawnPos = (this.config.width * 1.15) + this.pipeWidth;
-            this.pipes.children.entries[this.closestPipePair].x = xSpawnPos;
-            this.pipes.children.entries[this.closestPipePair].y = this.safeHeightTop;
+            this.pipesGroup.children.entries[this.closestPipePair].x = xSpawnPos;
+            this.pipesGroup.children.entries[this.closestPipePair].y = this.safeHeightTop;
 
-            this.pipes.children.entries[this.closestPipePair + 1].x = xSpawnPos;
-            this.pipes.children.entries[this.closestPipePair + 1].y = this.safeHeightBottom;
+            this.pipesGroup.children.entries[this.closestPipePair + 1].x = xSpawnPos;
+            this.pipesGroup.children.entries[this.closestPipePair + 1].y = this.safeHeightBottom;
 
             closestGap.x = xSpawnPos;
             closestGap.y = this.config.height / 2;
@@ -173,30 +167,19 @@ export class Scene2 extends Phaser.Scene {
             closestGap.body.checkCollision.none = false;
 
             this.outOfRangePipePair.setActive(true);//error here
-            this.pipes.children.entries[this.closestPipePair].setActive(true);
-            this.pipes.children.entries[this.closestPipePair + 1].setActive(true);
+            this.pipesGroup.children.entries[this.closestPipePair].setActive(true);
+            this.pipesGroup.children.entries[this.closestPipePair + 1].setActive(true);
         }
     }
 
-    launchIdleAnimation() {
-        this.anims.create({
-            key: 'birdAnimation',
-            frames: [
-                { key: 'yellowbird-downflap' },
-                { key: 'yellowbird-midflap' },
-                { key: 'yellowbird-upflap' }
-            ],
-            frameRate: 10,
-            repeat: -1
-        });
-        this.player.play("birdAnimation");
-    }
     startGame() {
+        if (this.isPlaying || this.gameOver) return;
         this.isPlaying = true;
         this.physics.resume();
-        this.player.body.setAllowGravity(true);
+        console.log("start game called");
+        this.player.sprite.body.setAllowGravity(true);
         this.managePipes(3);
-        this.createCollisonRules(this.platforms);
+        this.createCollisonRules();
         //this.welcomeMessage.setActive(false);
     }
     hit() {
@@ -204,7 +187,7 @@ export class Scene2 extends Phaser.Scene {
         this.closestPipePair = 0;
         this.isPlaying = false;
         this.physics.pause();
-        this.player.stop();
+        this.player.sprite.stop();
         this.restartButton.setVisible(false);
         this.restartButton.disableInteractive();
         this.windIcon.setVisible(false);
@@ -214,45 +197,55 @@ export class Scene2 extends Phaser.Scene {
             this.restartButton.setInteractive();
         }, [], this);
     }
+    createCollisonRules() {
+        this.physics.add.collider(this.player.sprite, this.platforms, this.hit, null, this); // Fix this line
+        this.physics.add.collider(this.player.sprite, this.pipesGroup, this.hit, null, this); // Fix this line
+        this.physics.add.overlap(this.player.sprite, this.gapsGroup, this.scoreAPoint, null, this); // Fix this line
+    }
 
     update() {
         const self = this;
         this.groundParallax(self);
-        if (this.cursors.up.isDown || this.cursors.space.isDown) {
-            if (!this.isPlaying && !this.gameOver) {
-                this.startGame();
-            }
-            this.player.setVelocityY(this.jumpForce);
-        }
+        this.player.update();
+        this.processPlayerRotation();
         if (!this.isPlaying) return;
-        this.pipes.setVelocityX(this.currentSpeed);
+        this.pipesGroup.setVelocityX(this.currentSpeed);
         this.gapsGroup.setVelocityX(this.currentSpeed);
         this.platforms.setVelocityX(this.currentSpeed);
         this.replacePipePair();
-
-        this.processPlayerRotation();
     }
 
+
+
+    groundParallax(self) {
+        this.platforms.children.iterate(function (child) {
+            if (child.body.x <= -child.width) {
+                child.x = self.config.width + child.width / 2;
+            }
+        });
+    }
+
+    //I wanted to have this function in Player class but apparently I can use Tweens only inside a scene and passing scene as a parameter did not work
     processPlayerRotation() {
-        const currentVelocityY = this.player.body.velocity.y;
+        const currentVelocityY = this.player.sprite.body.velocity.y;
 
         this.floatingTime += this.game.loop.delta;
         // Check if the bird is moving upwards or downwards
         if (currentVelocityY < this.previousVelocityY) {
+            console.log("currentVelocityY < this.previousVelocityY");
             // Bird is moving upwards
             this.tweens.add({
-                targets: this.player,
-                duration: 100, // Set the desired time in milliseconds
+                targets: this.player.sprite,
+                duration: 100,
                 angle: this.upAngle,
                 ease: 'Linear'
             });
             this.floatingTime = 0;
-            //this.player.setRotation(this.upAngle);
         } if (this.floatingTime >= 1000 && currentVelocityY > this.previousVelocityY) {
             // Bird is moving downwards
             this.tweens.add({
-                targets: this.player,
-                duration: 200, // Set the desired time in milliseconds
+                targets: this.player.sprite,
+                duration: 200,
                 angle: this.downAngle,
                 ease: 'Linear'
             });
@@ -263,14 +256,6 @@ export class Scene2 extends Phaser.Scene {
         this.previousVelocityY = currentVelocityY;
     }
 
-    groundParallax(self) {
-        this.platforms.children.iterate(function (child) {
-            if (child.body.x <= -child.width) {
-                child.x = self.config.width + child.width / 2;
-            }
-        });
-    }
-
     scoreAPoint() {
         var pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
         this.score++;
@@ -279,7 +264,7 @@ export class Scene2 extends Phaser.Scene {
         }
         pipePair.body.checkCollision.none = true;
         this.updateScoreUI();
-        if (this.pipes.children.entries.length > this.closestPipePair + 2) {
+        if (this.pipesGroup.children.entries.length > this.closestPipePair + 2) {
             this.closestPipePair += 2;
         }
         else {
