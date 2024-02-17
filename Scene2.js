@@ -50,7 +50,7 @@ export class Scene2 extends Phaser.Scene {
             this.hit, this.scoreAPoint, this.startGame.bind(this), this, this.cursors, this.isPlaying, this.gameOver);
         this.player.create();
 
-        this.gap = this.player.sprite.height * 6; //24 * 6 = 144
+        this.gap = this.player.sprite.height * 7; //24 * 7 = 1
 
         this.setPlatforms();
 

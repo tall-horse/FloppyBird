@@ -17,7 +17,6 @@ export default class Player {
         this.tweens = scene.tweens;
     }
     static preload(scenePar) {
-        console.log("preload called in player");
         this.downFlapSprite = scenePar.load.image("yellowbird-downflap", "assets/sprites/yellowbird-downflap.png");
         this.midFlapSprite = scenePar.load.image("yellowbird-midflap", "assets/sprites/yellowbird-midflap.png");
         this.upFlapSprite = scenePar.load.image("yellowbird-upflap", "assets/sprites/yellowbird-upflap.png");
