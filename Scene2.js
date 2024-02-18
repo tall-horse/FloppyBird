@@ -48,7 +48,7 @@ export class Scene2 extends Phaser.Scene {
         this.cursors = this.input.keyboard.createCursorKeys();
 
         this.player = new Player(this.config.width / 2, this.config.height / 2, this.platformsGroup, this.pipesGroup, this.gapsGroup,
-            this.hit, this.scoreAPoint, this.startGame.bind(this), this, this.cursors, this.isPlaying, this.gameOver);
+            this.hit, this.scoreAPoint, this.startGame.bind(this), this, this.cursors, this.isPlaying, this.gameOver, this.sound);
         this.player.create();
 
         this.gap = this.player.sprite.height * 8; //24 * 8 = 192
@@ -62,11 +62,13 @@ export class Scene2 extends Phaser.Scene {
         this.windIcon.setVisible(false);
         this.updateScoreUI();
         this.updateWindUI();
+        //failing to use styles for css file
         this.restartButton = this.add.text(this.config.width / 2, this.config.height / 3, 'Restart', { fontFamily: 'Arial', fontSize: 24, color: '#000000', backgroundColor: '#F3B95F' })
             .setInteractive()
             .on('pointerdown', () => {
                 this.restartScene();
             });
+
         //this.restartButton.setInteractive(false);
         this.restartButton.setVisible(false);
         this.restartButton.disableInteractive();
@@ -108,7 +110,6 @@ export class Scene2 extends Phaser.Scene {
     createPipePair(xPos) {
         this.minTopPipeHeight = this.config.height / 3 * 2 - (this.pipeHeight + this.baseHeight);
         this.maxTopPipeHeight = this.config.height / 4;
-        console.log("height is between " + this.minTopPipeHeight + " and " + this.maxTopPipeHeight);
         this.maxBottomPipeHeight = this.config.height - this.baseHeight + this.gap;
         this.minBottomPipeHeight = this.maxTopPipeHeight + this.baseHeight + this.gap * 2;
 
@@ -197,6 +198,7 @@ export class Scene2 extends Phaser.Scene {
         this.restartButton.setVisible(false);
         this.restartButton.disableInteractive();
         this.windIcon.setVisible(false);
+        this.player.playDieSound();
         this.gameOver = true;
         this.time.delayedCall(1000, () => {
             this.restartButton.setVisible(true);
@@ -275,6 +277,7 @@ export class Scene2 extends Phaser.Scene {
         else {
             this.closestPipePair = 0;
         }
+        this.player.playPointSound();
     }
     handleWindTime = () => {
         this.windIsOn = true;
