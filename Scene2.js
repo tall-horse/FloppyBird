@@ -51,10 +51,9 @@ export class Scene2 extends Phaser.Scene {
             this.hit, this.scoreAPoint, this.startGame.bind(this), this, this.cursors, this.isPlaying, this.gameOver);
         this.player.create();
 
-        this.gap = this.player.sprite.height * 7; //24 * 7 = 1
+        this.gap = this.player.sprite.height * 8; //24 * 8 = 192
 
         this.setPlatforms();
-
 
         this.scoreContainer = this.add.container(20, 20);
         this.windIcon = this.add.image(this.config.width / 2, this.config.width / 4, "wind");
@@ -107,20 +106,21 @@ export class Scene2 extends Phaser.Scene {
         this.pipesGroup.setDepth(0);
     }
     createPipePair(xPos) {
-        this.minTopPipeHeight = -135;
-        this.maxBottomPipeHeight = this.config.height - this.baseHeight; // 468
-        this.minBottomPipeHeight = this.maxBottomPipeHeight - this.pipeHeight + this.baseHeight + this.gap + 20;
-        this.maxTopPipeHeight = 0;
+        this.minTopPipeHeight = this.config.height / 3 * 2 - (this.pipeHeight + this.baseHeight);
+        this.maxTopPipeHeight = this.config.height / 4;
+        console.log("height is between " + this.minTopPipeHeight + " and " + this.maxTopPipeHeight);
+        this.maxBottomPipeHeight = this.config.height - this.baseHeight + this.gap;
+        this.minBottomPipeHeight = this.maxTopPipeHeight + this.baseHeight + this.gap * 2;
 
         this.heightTop = 0 - this.gap;
         this.heightBottom = this.heightTop + this.gap;
         this.safeZone = this.config.height / 2 - this.baseHeight;
 
         this.safeHeightTop = Phaser.Math.Between(this.minTopPipeHeight, this.maxTopPipeHeight);
-        this.safeHeightBottom = Phaser.Math.Between(this.minBottomPipeHeight, this.maxBottomPipeHeight);
+        this.safeHeightBottom = this.safeHeightTop + this.gap + this.pipeHeight - this.baseHeight;
 
         var topPipe = this.pipesGroup.create(xPos, this.safeHeightTop, "pipe");
-        var bottomPipe = this.pipesGroup.create(xPos, this.safeHeightBottom, "pipe"); //468
+        var bottomPipe = this.pipesGroup.create(xPos, this.safeHeightBottom, "pipe");
 
         topPipe.body.setAllowGravity(false);
         bottomPipe.body.setAllowGravity(false);
@@ -159,7 +159,7 @@ export class Scene2 extends Phaser.Scene {
         if (closestGap && closestGap.x < spawnNewPipesPositionTrigger) { // time to enable next pipe pair
             // enable next pair
             this.safeHeightTop = Phaser.Math.Between(this.minTopPipeHeight, this.maxTopPipeHeight);
-            this.safeHeightBottom = Phaser.Math.Between(this.minBottomPipeHeight, this.maxBottomPipeHeight);
+            this.safeHeightBottom = this.safeHeightTop + this.gap + this.pipeHeight - this.baseHeight;
 
             const xSpawnPos = (this.config.width * 1.15) + this.pipeWidth;
             this.pipesGroup.children.entries[this.closestPipePair].x = xSpawnPos;
@@ -206,7 +206,7 @@ export class Scene2 extends Phaser.Scene {
     createCollisonRules() {
         this.physics.add.collider(this.player.sprite, this.platformsGroup, this.hit, null, this);
         this.physics.add.collider(this.player, this.ceilingGroup, null, null, this);
-        this.physics.add.collider(this.player.sprite, this.pipesGroup, this.hit, null, this);
+        //this.physics.add.collider(this.player.sprite, this.pipesGroup, this.hit, null, this);
         this.physics.add.overlap(this.player.sprite, this.gapsGroup, this.scoreAPoint, null, this);
     }
 
@@ -312,16 +312,6 @@ export class Scene2 extends Phaser.Scene {
         }
     }
 
-    findRightMostGap() {
-        var result;
-        var minX = 0;
-        for (let i = 0; i < this.gapsGroup.children.entries.length; i++) {
-            if (this.gapsGroup.children.entries[i].body.x < minX) {
-                result = this.gapsGroup.children.entries[i];
-            }
-        }
-        return result;
-    }
     restartScene() {
         this.gameOver = false;
         this.scene.restart();
