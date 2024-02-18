@@ -59,7 +59,7 @@ export default class Player {
         this.launchIdleAnimation();
     }
     update() {
-        if (this.cursors.up.isDown || this.cursors.space.isDown) {
+        if (this.cursors.up.isDown || this.cursors.space.isDown || (this.scene.input && this.scene.input.activePointer.isDown)) {
             if (!this.isPlaying && !this.gameOver) {
                 this.startGame();
             }
