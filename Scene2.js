@@ -26,7 +26,7 @@ export class Scene2 extends Phaser.Scene {
         this.normalSpeed = -100;
         this.modifiedSpeed;
         this.currentSpeed;
-        this.windSpeed = 40;
+        this.windSpeed = 20;
         this.windChangeFrequency = 5;
 
         this.windEvent = WindEvent;
