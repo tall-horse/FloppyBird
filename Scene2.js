@@ -28,6 +28,9 @@ export class Scene2 extends Phaser.Scene {
         this.currentSpeed;
         this.windSpeed = 20;
         this.windChangeFrequency = 5;
+        this.timeBeforeBirdShouldLookDown = 800;
+        this.lookUpAnimationDuration = 100;
+        this.lookDownAnimationDuration = 500;
 
         this.windEvent = WindEvent;
     }
@@ -100,8 +103,8 @@ export class Scene2 extends Phaser.Scene {
         this.background.setOrigin(0, 0);
     }
 
-    managePipes(nrOfPipePairs) {
-        for (let i = 0; i < nrOfPipePairs; i++) {
+    managePipes(numberOfPipePairs) {
+        for (let i = 0; i < numberOfPipePairs; i++) {
             this.createPipePair(this.config.width * (2 + i));
         }
         this.currentSpeed = this.normalSpeed;
@@ -224,8 +227,6 @@ export class Scene2 extends Phaser.Scene {
         this.replacePipePair();
     }
 
-
-
     groundParallax(self) {
         this.platformsGroup.children.iterate(function (child) {
             if (child.body.x <= -child.width) {
@@ -244,16 +245,16 @@ export class Scene2 extends Phaser.Scene {
             // Bird is moving upwards
             this.tweens.add({
                 targets: this.player.sprite,
-                duration: 100,
+                duration: this.lookUpAnimationDuration,
                 angle: this.upAngle,
                 ease: 'Linear'
             });
             this.floatingTime = 0;
-        } if (this.floatingTime >= 1000 && currentVelocityY > this.previousVelocityY) {
+        } if (this.floatingTime >= this.timeBeforeBirdShouldLookDown && currentVelocityY > this.previousVelocityY) {
             // Bird is moving downwards
             this.tweens.add({
                 targets: this.player.sprite,
-                duration: 200,
+                duration: this.lookDownAnimationDuration,
                 angle: this.downAngle,
                 ease: 'Linear'
             });
