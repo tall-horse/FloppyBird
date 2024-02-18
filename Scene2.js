@@ -99,7 +99,7 @@ export class Scene2 extends Phaser.Scene {
     }
 
     managePipes(nrOfPipePairs) {
-        for (var i = 0; i < nrOfPipePairs; i++) {
+        for (let i = 0; i < nrOfPipePairs; i++) {
             this.createPipePair(this.config.width * (2 + i));
         }
         this.currentSpeed = this.normalSpeed;
@@ -119,15 +119,15 @@ export class Scene2 extends Phaser.Scene {
         this.safeHeightTop = Phaser.Math.Between(this.minTopPipeHeight, this.maxTopPipeHeight);
         this.safeHeightBottom = this.safeHeightTop + this.gap + this.pipeHeight - this.baseHeight;
 
-        var topPipe = this.pipesGroup.create(xPos, this.safeHeightTop, "pipe");
-        var bottomPipe = this.pipesGroup.create(xPos, this.safeHeightBottom, "pipe");
+        let topPipe = this.pipesGroup.create(xPos, this.safeHeightTop, "pipe");
+        let bottomPipe = this.pipesGroup.create(xPos, this.safeHeightBottom, "pipe");
 
         topPipe.body.setAllowGravity(false);
         bottomPipe.body.setAllowGravity(false);
 
         topPipe.setFlipY(true);
 
-        var scoreTrigger = this.add.rectangle(
+        let scoreTrigger = this.add.rectangle(
             xPos,
             this.config.height / 2,
             this.pipeWidth / 4,
@@ -141,8 +141,8 @@ export class Scene2 extends Phaser.Scene {
         scoreTrigger.setVisible(false);
     }
     replacePipePair() {
-        var pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
-        var outOfScreenPos = 0 - this.pipeWidth;
+        let pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
+        let outOfScreenPos = 0 - this.pipeWidth;
         if (pipePair && pipePair.x < outOfScreenPos - this.gapsGroup.children.entries.length) {
             this.outOfRangePipePair = pipePair;
             pipePair.setActive(false);
@@ -154,7 +154,7 @@ export class Scene2 extends Phaser.Scene {
     }
 
     updateNextPipePair(closestGap) {
-        var spawnNewPipesPositionTrigger = (this.config.width / 2) - this.pipeWidth;
+        let spawnNewPipesPositionTrigger = (this.config.width / 2) - this.pipeWidth;
 
         if (closestGap && closestGap.x < spawnNewPipesPositionTrigger) { // time to enable next pipe pair
             // enable next pair
@@ -206,7 +206,7 @@ export class Scene2 extends Phaser.Scene {
     createCollisonRules() {
         this.physics.add.collider(this.player.sprite, this.platformsGroup, this.hit, null, this);
         this.physics.add.collider(this.player, this.ceilingGroup, null, null, this);
-        //this.physics.add.collider(this.player.sprite, this.pipesGroup, this.hit, null, this);
+        this.physics.add.collider(this.player.sprite, this.pipesGroup, this.hit, null, this);
         this.physics.add.overlap(this.player.sprite, this.gapsGroup, this.scoreAPoint, null, this);
     }
 
@@ -262,7 +262,7 @@ export class Scene2 extends Phaser.Scene {
     }
 
     scoreAPoint() {
-        var pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
+        let pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
         this.score++;
         if (this.score % this.windChangeFrequency === 0) {
             this.windEvent.fire();
