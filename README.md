@@ -1,0 +1,1 @@
+This is a remake of Flappy Bird on Phaser 3. This remake is not made to represent the full copy of the original. The main difference between the original and the remake is wind mechanic. At some point of the game (when score is divisible by 5) the wind starts blowing in one of two directions, thus affecting the speed of the player.
