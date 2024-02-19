@@ -59,8 +59,8 @@ export default class Player {
         this.launchIdleAnimation();
     }
     update() {
-        if (this.cursors.up.isDown || this.cursors.space.isDown || (this.scene.input && this.scene.input.activePointer.isDown)) {
-            if (!this.isPlaying && !this.gameOver) {
+        if ((this.cursors.up.isDown || this.cursors.space.isDown || (this.scene.input && this.scene.input.activePointer.isDown)) && !this.gameOver) {
+            if (!this.isPlaying) {
                 this.startGame();
             }
             this.sprite.setVelocityY(this.jumpForce);

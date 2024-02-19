@@ -1,3 +1,4 @@
+
 import WindEvent from './WindEvent.js';
 import Player from './Player.js';
 
@@ -10,11 +11,11 @@ export class Scene2 extends Phaser.Scene {
         this.baseWidth = 336;
         this.config;
         this.upAngle = -20;
-        this.downAngle = 90;
+        this.downAngle = 60;
         this.previousVelocityY = 0;
         this.floatingTime = 0;
         this.isPlaying = false;
-        this.jumpForce = -175;//
+        this.jumpForce = -175;
         this.timeBeforePipesCome = 5;
         this.closestPipePair = 0;
         this.pipeWidth = 52;
@@ -30,8 +31,8 @@ export class Scene2 extends Phaser.Scene {
         this.windChangeFrequency = 5;
         this.timeBeforeBirdShouldLookDown = 800;
         this.lookUpAnimationDuration = 100;
-        this.lookDownAnimationDuration = 500;
-
+        this.lookDownAnimationDuration = 400;
+        this.birdHeight = 24;
         this.windEvent = WindEvent;
     }
     preload() {
@@ -56,6 +57,7 @@ export class Scene2 extends Phaser.Scene {
 
         this.gap = this.player.sprite.height * 8; //24 * 8 = 192
 
+        this.setCeiling();
         this.setPlatforms();
 
         this.scoreContainer = this.add.container(20, 20);
@@ -65,9 +67,18 @@ export class Scene2 extends Phaser.Scene {
         this.windIcon.setVisible(false);
         this.updateScoreUI();
         this.updateWindUI();
-        //failing to use styles for css file
-        this.restartButton = this.add.text(this.config.width / 2, this.config.height / 3, 'Restart', { fontFamily: 'Arial', fontSize: 24, color: '#000000', backgroundColor: '#F3B95F' })
+        let textStyle = {
+            fontFamily: 'Arial',
+            fontSize: 24,
+            padding: 10,
+            color: '#FFFFFF',
+            backgroundColor: '#F3B95F',
+            border: 3,
+            borderColor: '#FFFFFF'
+        }
+        this.restartButton = this.add.text(this.config.width / 2, this.config.height / 3, 'RESTART', textStyle)
             .setInteractive()
+            .setOrigin(0.5)
             .on('pointerdown', () => {
                 this.restartScene();
             });
@@ -90,10 +101,11 @@ export class Scene2 extends Phaser.Scene {
     }
 
     setCeiling() {
-        let ceiling = this.ceilingGroup.create(this.config.width / 2, 0 - this.baseWidth, 'ceiling');
+        let ceiling = this.ceilingGroup.create(0, -this.birdHeight * 3, 'ceiling');
         ceiling.setOrigin(0, 0);
         ceiling.setScale(this.game.config.width, 1);
         ceiling.setAlpha(0);
+        ceiling.body.setAllowGravity(false);
         ceiling.body.setImmovable(true);
     }
 
@@ -111,8 +123,8 @@ export class Scene2 extends Phaser.Scene {
         this.pipesGroup.setDepth(0);
     }
     createPipePair(xPos) {
-        this.minTopPipeHeight = this.config.height / 3 * 2 - (this.pipeHeight + this.baseHeight);
-        this.maxTopPipeHeight = this.config.height / 4;
+        this.minTopPipeHeight = this.config.height * 0.7 - this.pipeHeight - this.baseHeight;
+        this.maxTopPipeHeight = this.config.height * 0.3;
         this.maxBottomPipeHeight = this.config.height - this.baseHeight + this.gap;
         this.minBottomPipeHeight = this.maxTopPipeHeight + this.baseHeight + this.gap * 2;
 
@@ -202,7 +214,7 @@ export class Scene2 extends Phaser.Scene {
         this.restartButton.disableInteractive();
         this.windIcon.setVisible(false);
         this.player.playDieSound();
-        this.gameOver = true;
+        this.player.gameOver = true;
         this.time.delayedCall(1000, () => {
             this.restartButton.setVisible(true);
             this.restartButton.setInteractive();
@@ -210,7 +222,7 @@ export class Scene2 extends Phaser.Scene {
     }
     createCollisonRules() {
         this.physics.add.collider(this.player.sprite, this.platformsGroup, this.hit, null, this);
-        this.physics.add.collider(this.player, this.ceilingGroup, null, null, this);
+        this.physics.add.collider(this.player.sprite, this.ceilingGroup, null, null, this);
         this.physics.add.collider(this.player.sprite, this.pipesGroup, this.hit, null, this);
         this.physics.add.overlap(this.player.sprite, this.gapsGroup, this.scoreAPoint, null, this);
     }
