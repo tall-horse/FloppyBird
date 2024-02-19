@@ -1,14 +1,12 @@
-
 import WindEvent from './WindEvent.js';
 import Player from './Player.js';
+import PipeManager from './PipeManager.js';
 
 export class Scene2 extends Phaser.Scene {
     constructor() {
         super("playGame");
         this.score = 0;
         this.scoreContainer;
-        this.baseHeight = 112;
-        this.baseWidth = 336;
         this.config;
         this.upAngle = -20;
         this.downAngle = 60;
@@ -18,9 +16,6 @@ export class Scene2 extends Phaser.Scene {
         this.jumpForce = -175;
         this.timeBeforePipesCome = 5;
         this.closestPipePair = 0;
-        this.pipeWidth = 52;
-        this.pipeHeight = 320;
-        this.baseHeight = 112;
         this.gameOver = false;
         this.outOfRangePipePair = null;
         this.windIsOn = false;
@@ -34,28 +29,27 @@ export class Scene2 extends Phaser.Scene {
         this.lookDownAnimationDuration = 400;
         this.birdHeight = 24;
         this.windEvent = WindEvent;
+        this.pipeManager;
     }
     preload() {
         Player.preload(this);
+        PipeManager.preload(this);
     }
 
     create() {
-        this.setBackground();
-
         this.config = this.game.config;
-
+        this.setBackground();
         this.platformsGroup = this.physics.add.group();
         this.pipesGroup = this.physics.add.group();
         this.ceilingGroup = this.physics.add.group();
         this.gapsGroup = this.physics.add.group();
+        this.pipeManager = new PipeManager(this);
 
         this.cursors = this.input.keyboard.createCursorKeys();
 
         this.player = new Player(this.config.width / 2, this.config.height / 2, this.platformsGroup, this.pipesGroup, this.gapsGroup,
             this.hit, this.scoreAPoint, this.startGame.bind(this), this, this.cursors, this.isPlaying, this.gameOver, this.sound);
         this.player.create();
-
-        this.gap = this.player.sprite.height * 8; //24 * 8 = 192
 
         this.setCeiling();
         this.setPlatforms();
@@ -83,11 +77,9 @@ export class Scene2 extends Phaser.Scene {
                 this.restartScene();
             });
 
-        //this.restartButton.setInteractive(false);
         this.restartButton.setVisible(false);
         this.restartButton.disableInteractive();
         this.restartButton.setDepth(4);
-        //this.welcomeMessage = this.add.sprite(this.config.width / 2, this.config.height / 2, "message");
         this.windEvent.addListener(this.handleWindTime);
     }
     setPlatforms() {
@@ -115,94 +107,14 @@ export class Scene2 extends Phaser.Scene {
         this.background.setOrigin(0, 0);
     }
 
-    managePipes(numberOfPipePairs) {
-        for (let i = 0; i < numberOfPipePairs; i++) {
-            this.createPipePair(this.config.width * (2 + i));
-        }
-        this.currentSpeed = this.normalSpeed;
-        this.pipesGroup.setDepth(0);
-    }
-    createPipePair(xPos) {
-        this.minTopPipeHeight = this.config.height * 0.7 - this.pipeHeight - this.baseHeight;
-        this.maxTopPipeHeight = this.config.height * 0.3;
-        this.maxBottomPipeHeight = this.config.height - this.baseHeight + this.gap;
-        this.minBottomPipeHeight = this.maxTopPipeHeight + this.baseHeight + this.gap * 2;
-
-        this.heightTop = 0 - this.gap;
-        this.heightBottom = this.heightTop + this.gap;
-        this.safeZone = this.config.height / 2 - this.baseHeight;
-
-        this.safeHeightTop = Phaser.Math.Between(this.minTopPipeHeight, this.maxTopPipeHeight);
-        this.safeHeightBottom = this.safeHeightTop + this.gap + this.pipeHeight - this.baseHeight;
-
-        let topPipe = this.pipesGroup.create(xPos, this.safeHeightTop, "pipe");
-        let bottomPipe = this.pipesGroup.create(xPos, this.safeHeightBottom, "pipe");
-
-        topPipe.body.setAllowGravity(false);
-        bottomPipe.body.setAllowGravity(false);
-
-        topPipe.setFlipY(true);
-
-        let scoreTrigger = this.add.rectangle(
-            xPos,
-            this.config.height / 2,
-            this.pipeWidth / 4,
-            this.config.height,
-            0xD04848, 1
-        );
-
-        this.gapsGroup.add(scoreTrigger);
-        this.physics.add.existing(scoreTrigger);
-        scoreTrigger.body.setAllowGravity(false);
-        scoreTrigger.setVisible(false);
-    }
-    replacePipePair() {
-        let pipePair = this.gapsGroup.children.entries[this.closestPipePair / 2];
-        let outOfScreenPos = 0 - this.pipeWidth;
-        if (pipePair && pipePair.x < outOfScreenPos - this.gapsGroup.children.entries.length) {
-            this.outOfRangePipePair = pipePair;
-            pipePair.setActive(false);
-            this.pipesGroup.children.entries[this.closestPipePair].setActive(false);
-            this.pipesGroup.children.entries[this.closestPipePair + 1].setActive(false);
-
-            this.updateNextPipePair(pipePair);
-        }
-    }
-
-    updateNextPipePair(closestGap) {
-        let spawnNewPipesPositionTrigger = (this.config.width / 2) - this.pipeWidth;
-
-        if (closestGap && closestGap.x < spawnNewPipesPositionTrigger) { // time to enable next pipe pair
-            // enable next pair
-            this.safeHeightTop = Phaser.Math.Between(this.minTopPipeHeight, this.maxTopPipeHeight);
-            this.safeHeightBottom = this.safeHeightTop + this.gap + this.pipeHeight - this.baseHeight;
-
-            const xSpawnPos = (this.config.width * 1.15) + this.pipeWidth;
-            this.pipesGroup.children.entries[this.closestPipePair].x = xSpawnPos;
-            this.pipesGroup.children.entries[this.closestPipePair].y = this.safeHeightTop;
-
-            this.pipesGroup.children.entries[this.closestPipePair + 1].x = xSpawnPos;
-            this.pipesGroup.children.entries[this.closestPipePair + 1].y = this.safeHeightBottom;
-
-            closestGap.x = xSpawnPos;
-            closestGap.y = this.config.height / 2;
-
-            closestGap.body.checkCollision.none = false;
-
-            this.outOfRangePipePair.setActive(true);
-            this.pipesGroup.children.entries[this.closestPipePair].setActive(true);
-            this.pipesGroup.children.entries[this.closestPipePair + 1].setActive(true);
-        }
-    }
-
     startGame() {
         if (this.isPlaying || this.gameOver) return;
         this.isPlaying = true;
         this.physics.resume();
         this.player.sprite.body.setAllowGravity(true);
-        this.managePipes(3);
+        console.log('manage pieps');
+        this.pipeManager.managePipes(3);
         this.createCollisonRules();
-        //this.welcomeMessage.setActive(false);
     }
     hit() {
         this.score = 0;
@@ -236,7 +148,7 @@ export class Scene2 extends Phaser.Scene {
         this.pipesGroup.setVelocityX(this.currentSpeed);
         this.gapsGroup.setVelocityX(this.currentSpeed);
         this.platformsGroup.setVelocityX(this.currentSpeed);
-        this.replacePipePair();
+        this.pipeManager.replacePipePair();
     }
 
     groundParallax(self) {
